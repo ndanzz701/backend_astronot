@@ -8,7 +8,7 @@
  * Resourceful controller for interacting with answers
  */
 const Answer = use('App/Models/Answer')
-
+const Helpers = use('Helpers')
 class AnswerController {
   /**
    * Show a list of all answers.
@@ -43,7 +43,23 @@ class AnswerController {
    * @param {Response} ctx.response
    */
   async store ({ request, response }) {
-    const answers = await Answer.create(request.all())
+
+    // const answers = await Answer.create(request.all())
+    const Picture = request.file('attachment')
+    const answers = new Answer()
+    answers.question_id = request.input('question_id')
+    answers.user_id = request.input('user_id')
+    answers.answer = request.input('answer')
+    if(Picture!==null){
+      answers.attachment = `${new Date().getTime()}.mp4`
+      await Picture.move(Helpers.publicPath('uploads/videos'),{
+        name:answers.attachment
+      })
+    }else{
+      answers.attachment = ``
+    }
+
+    await answers.save()
     try{
         return{
           "status":"success",
